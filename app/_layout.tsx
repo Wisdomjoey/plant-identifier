@@ -1,24 +1,50 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { HistoryProvider } from "@/contexts/HistoryContext";
+import { useFrameworkReady } from "@/hooks/useFrameworkReady";
+import { Stack, useRouter, useSegments } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
+function RootLayoutNav() {
+  const router = useRouter();
+  const segments = useSegments();
+  const { session, loading } = useAuth();
 
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
+  useEffect(() => {
+    if (loading) return;
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
+    const inAuthGroup = segments[0] === "auth";
+
+    if (!session && !inAuthGroup) {
+      router.replace("/auth/sign-in");
+    } else if (session && inAuthGroup) {
+      router.replace("/(tabs)");
+    }
+  }, [session, loading, segments, router]);
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <Stack
+      initialRouteName={!session ? "auth/sign-in" : "(tabs)"}
+      screenOptions={{ headerShown: false }}
+    >
+      <Stack.Screen name="auth/sign-in" />
+      <Stack.Screen name="auth/sign-up" />
+      <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="history-detail" />
+      <Stack.Screen name="+not-found" />
+    </Stack>
+  );
+}
+
+export default function RootLayout() {
+  useFrameworkReady();
+
+  return (
+    <AuthProvider>
+      <HistoryProvider>
+        <RootLayoutNav />
+        <StatusBar style="auto" />
+      </HistoryProvider>
+    </AuthProvider>
   );
 }
