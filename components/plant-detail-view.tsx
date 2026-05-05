@@ -35,6 +35,7 @@ export default function PlantDetailView({
   const data = result?.result.classification.suggestions[pageView.page];
   const length = (result?.result.classification.suggestions.length || 1) - 1;
   const images = [
+    ...result.input.images,
     ...(data?.details.image ? [data?.details.image.value] : ""),
     ...(data?.similar_images ?? []).map((img) => img.url),
   ];

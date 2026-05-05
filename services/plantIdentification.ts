@@ -1,8 +1,9 @@
 import { supabase } from "@/lib/supabase";
+// import { uploadImage } from "@/lib/upload";
 import { PlantIDRes } from "@/types/types";
 
 export async function identifyPlantFromImage(
-  imageBase64: string
+  imageBase64: string,
 ): Promise<PlantIDRes> {
   const position =
     "geolocation" in navigator
@@ -26,7 +27,7 @@ export async function identifyPlantFromImage(
         similar_images: true,
         images: [imageBase64],
       }),
-    }
+    },
   );
 
   if (!response.ok) {
@@ -47,7 +48,7 @@ export async function saveIdentification(
   userId: string,
   result: string,
   location?: string,
-  notes?: string
+  notes?: string,
 ) {
   const { data, error } = await supabase
     .from("identifications")
